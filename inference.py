@@ -2,6 +2,8 @@ import os, re, cv2
 from typing import Union
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
+import argparse
+
 
 class SimpleInference:
     """
@@ -217,12 +219,18 @@ class SimpleInference:
             return None
 
 
-if __name__ == "__main__":
+def main():
+    parser = argparse.ArgumentParser(description="Run inference with RoboBrain 2.0")
+    parser.add_argument("--image", required=True, help="Path to the input image.")
+    parser.add_argument("--prompt", required=True, help="Input prompt.")
+    parser.add_argument("--task", default="general", choices=["general", "pointing", "affordance", "trajectory", "grounding"], help="Task type.")
+    parser.add_argument("--plot", action='store_true', help="Enable plotting and save the image.")
+    args = parser.parse_args()
 
     model = SimpleInference("BAAI/RoboBrain2.0-7B")
-
-    prompt = "What is shown in this image?"
-    image = "http://images.cocodataset.org/val2017/000000039769.jpg"
-
-    pred = model.inference(prompt, image, task="general", plot=False, enable_thinking=True, do_sample=True)
+    pred = model.inference(args.prompt, args.image, task=args.task, plot=args.plot)
     print(f"Prediction:\n{pred}")
+
+
+if __name__ == "__main__":
+    main()
