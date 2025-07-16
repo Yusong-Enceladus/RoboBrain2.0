@@ -10,7 +10,11 @@ class SimpleInference:
             model_name_or_path (str): The name or path of the model.
         """
         self.tokenizer = AutoTokenizer.from_pretrained(model_name_or_path, trust_remote_code=True)
-        self.model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True).eval().cuda()
+        self.model = AutoModel.from_pretrained(
+            model_name_or_path,
+            torch_dtype=torch.float16,
+            trust_remote_code=True
+        ).eval().cuda()
         self.model.tokenizer = self.tokenizer
 
     def inference(self,
