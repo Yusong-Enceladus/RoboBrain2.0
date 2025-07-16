@@ -79,12 +79,32 @@ class SimpleInference:
         """
         A simple chat function.
         """
-        query = self.tokenizer.from_list_format([
-            {'image': image_path},
-            {'text': prompt},
-        ])
+        # The 'from_list_format' method is not standard. 
+        # We build the message list and use 'apply_chat_template' which is more robust.
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image"},
+                    {"type": "text", "text": prompt}
+                ]
+            }
+        ]
+
+        # Process the image and apply the chat template
+        image = Image.open(image_path)
+        text = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        model_inputs = self.model.process_images_texts(images=[image], texts=[text])
         
-        response, history = self.model.chat(self.tokenizer, query=query, history=None, do_sample=do_sample)
+        # Move inputs to the correct device
+        model_inputs = {k: v.to(self.model.device) for k, v in model_inputs.items()}
+
+        # Generate response
+        gen_kwargs = {"max_new_tokens": 2048, "do_sample": do_sample}
+        with torch.no_grad():
+            res = self.model.generate(**model_inputs, **gen_kwargs)
+            response_ids = res[0]
+            response = self.tokenizer.decode(response_ids, skip_special_tokens=True)
 
         if enable_thinking and "<THINK>" in response and "</THINK>" in response:
             start_think = response.find("<THINK>") + len("<THINK>")
