@@ -94,7 +94,9 @@ class SimpleInference:
         # Process the image and apply the chat template
         image = Image.open(image_path)
         text = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        model_inputs = self.model.process_images_texts(images=[image], texts=[text])
+        
+        # The tokenizer for this model is responsible for creating the combined inputs
+        model_inputs = self.tokenizer([text], images=[image], return_tensors='pt')
         
         # Move inputs to the correct device
         model_inputs = {k: v.to(self.model.device) for k, v in model_inputs.items()}
