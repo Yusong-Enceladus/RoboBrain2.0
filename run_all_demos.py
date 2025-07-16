@@ -1,6 +1,9 @@
 import os
 from inference import SimpleInference
 
+# Set the Hugging Face endpoint to the mirror for reliable downloads in certain regions.
+os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
+
 def run_all_demos():
     """
     Runs a series of inference demos for RoboBrain 2.0 to showcase its capabilities.
